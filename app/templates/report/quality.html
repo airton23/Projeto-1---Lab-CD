@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Consulte a auditoria e os resultados dos detectores.
+{% endblock %}
+
+{% block content %}
+  <section class="metrics-grid">
+    <article class="metric">
+      <span class="metric-label">CÉLULAS AUSENTES NA LEITURA</span>
+      <strong>{{ missing_count }}</strong>
+      <span>marcadores e vazios reconhecidos</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">REGISTROS COM ALERTAS</span>
+      <strong>{{ invalid_count }}</strong>
+      <span>uma linha pode violar várias regras</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">DUPLICAÇÕES EXATAS</span>
+      <strong>{{ duplicate_count }}</strong>
+      <span>ocorrências adicionais</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">LINHAS COM CHAVE REPETIDA</span>
+      <strong>{{ duplicate_key_rows }}</strong>
+      <span>chave: time + partida</span>
+    </article>
+  </section>
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Ausências, zeros e inconsistências</h2>
+      </div>
+    </div>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Resumo de qualidade por coluna"
+    >
+      {{ audit_table }}
+    </div>
+
+  </section>
+  <section class="panel">
+    <h2>Ocorrências de inconsistência</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Ocorrências de inconsistência"
+    >
+      {{ issues_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="chart">{{ detection_heatmap }}</div>
+  </section>
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>{{ methods[method] }} · {{ schema[variable].label }}</h2>
+      </div>
+    </div>
+    <div class="note-grid two">
+      {% for card in detector_details %}
+        <article class="note-card">
+          <h3>{{ card.team.name }}</h3>
+          <p>
+            <strong>{{ card.result.count|fmt }}</strong>
+            sinalizados em {{ card.result.n }} valores válidos ·
+            <span class="chip">{{ card.result.status }}</span>
+          </p>
+          <p>
+            <strong>Limiar:</strong>
+            {{ card.result.threshold|fmt }}
+          </p>
+          <dl class="parameter-list">
+            {% for key, value in card.result.parameters.items() %}
+              <dt>{{ key }}</dt>
+              <dd>
+                {{ value|fmt }}
+              </dd>
+            {% endfor %}
+          </dl>
+
+        </article>
+      {% endfor %}
+    </div>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Jogos sinalizados pelo detector selecionado"
+    >
+      {{ outlier_occurrences }}
+    </div>
+
+  </section>
+  <section class="panel">
+    <h2>Sinalizações por equipe, variável e método</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Contagens de todos os detectores"
+    >
+      {{ detectors_table }}
+    </div>
+  </section>
+{% endblock %}

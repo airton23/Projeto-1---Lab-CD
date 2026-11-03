@@ -1,0 +1,52 @@
+<section class="panel prose">
+  <h3>Por que os dados podem faltar?</h3>
+  <div class="concept-grid">
+    <article>
+      <h3>MCAR</h3>
+      <p>A ausência é independente dos dados observados e não observados. Exemplo hipotético: perda aleatória na transmissão.</p>
+    </article>
+    <article>
+      <h3>MAR</h3>
+      <p>Após condicionar aos dados observados, a ausência não depende do valor faltante. Exemplo hipotético: falhas associadas a uma fonte já registrada.</p>
+    </article>
+    <article>
+      <h3>MNAR</h3>
+      <p>A ausência ainda depende do valor não observado, mesmo considerando os dados disponíveis. Exemplo hipotético: omissão ligada ao desempenho que não foi registrado.</p>
+    </article>
+  </div>
+
+  {% if missing_count == 0 %}
+    <div class="callout compact">
+      <strong>Sem ausências detectadas neste recorte.</strong>
+      <p>Não houve imputação nem execução dos testes de mecanismo. Campos completos não garantem que todas as partidas tenham sido coletadas.</p>
+    </div>
+  {% else %}
+    <div class="callout compact">
+      <strong>Há valores ausentes.</strong>
+      <p>Não foi aplicada imputação automática. Cada cálculo usa os valores válidos da própria variável e informa seu n. Os testes de mecanismo abaixo são discutidos metodologicamente e não foram executados.</p>
+    </div>
+  {% endif %}
+
+  <details>
+    <summary>Little, Jamshidian–Jalal, Listing–Schlittgen e Fairclough: como e por que usar</summary>
+    <div class="details-body">
+      <p>
+        <strong>Little:</strong>
+        investiga globalmente a hipótese MCAR comparando médias entre padrões de ausência sob um modelo multivariado. Requer avaliar pressupostos de distribuição, estimação da covariância e tamanho dos padrões. Rejeitar H0 contraria MCAR; não rejeitar não o comprova.
+      </p>
+      <p>
+        <strong>Jamshidian–Jalal:</strong>
+        compara padrões de ausência por procedimentos relacionados à homogeneidade das distribuições/covariâncias, com versões que têm pressupostos de normalidade distintos. É útil quando se pretende avaliar MCAR respeitando a natureza dos dados. Não se deve simplesmente traduzir um algoritmo sem verificar a versão e seus pressupostos.
+      </p>
+      <p>
+        <strong>Listing–Schlittgen:</strong>
+        foi formulado no contexto de abandono longitudinal. O procedimento paramétrico discutido exige padrões monotônicos, compara médias de quem continua e quem abandona e combina as diferenças ao longo das avaliações. Uma tabela de estatísticas esportivas não corresponde automaticamente a esse desenho.
+      </p>
+      <p>
+        <strong>Fairclough:</strong>
+        modela por regressão logística o indicador de resposta/ausência em cada avaliação, incluindo covariáveis e resultados previamente observados. Ajuda a investigar associações da ausência com dados disponíveis após ajuste. Associações podem contrariar MCAR, mas não identificam MAR versus MNAR sem pressupostos ou informação adicional sobre valores não observados.
+      </p>
+      <p>São explicações de finalidade e aplicabilidade, conforme o enunciado, e não resultados de testes executados. Referências e grafias bibliográficas estão na seção <a href="{{ url_for('report.full_report', _anchor='metodologia') }}">metodologia deste relatório</a>.</p>
+    </div>
+  </details>
+</section>

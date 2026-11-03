@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Tipos, renomeações e conversões registradas na base.
+{% endblock %}
+
+{% block content %}
+  <section class="metrics-grid">
+    <article class="metric">
+      <span class="metric-label">ARQUIVO ORIGINAL</span><strong>{{ source.original_rows|fmt }}</strong><span>registros</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">RECORTE</span><strong>{{ source.rows|fmt }}</strong><span>registros das duas equipes</span>
+    </article>
+    <article class="metric">
+      <span
+        class="metric-label"
+      >TAMANHO DO CSV</span><strong>{{ (source.bytes / 1024)|fmt }}</strong><span>KiB</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">MEMÓRIA DA BASE</span><strong>{{ (source.memory_bytes / 1024)|fmt }}</strong><span>KiB, incluindo índice</span>
+    </article>
+  </section>
+  <section class="panel">
+    <h2>Renomeação e conversão dos campos</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Conversões de tipos e falhas"
+    >
+      {{ transformations_table }}
+    </div>
+  </section>
+{% endblock %}

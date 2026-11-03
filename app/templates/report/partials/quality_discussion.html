@@ -1,0 +1,17 @@
+<section class="panel prose">
+  <h3>O que foi verificado e como foi tratado</h3>
+  <p>Verificamos tipos, domínio, duplicações, datas e relações esportivas: convertidos ≤ tentados; REB = OREB + DREB; PTS = 2 × FGM + FG3M + FTM. Aproveitamentos usam tolerância de 0,0005 para arredondamento.</p>
+  <p>Acumulados são conferidos entre jogos consecutivos; placar e data podem ser validados pela linha do adversário na origem. Uma única linha por partida no recorte é esperada contra times de fora do grupo.</p>
+  <p>
+    <strong>Zeros válidos são preservados.</strong>
+    Células inválidas são omitidas do cálculo afetado; duplicações conflitantes exigem revisão. Extremos válidos permanecem na análise.
+  </p>
+  <div
+    class="table-scroll"
+    tabindex="0"
+    role="region"
+    aria-label="Ocorrências de inconsistência"
+  >
+    {{ issues_table }}
+  </div>
+</section>
