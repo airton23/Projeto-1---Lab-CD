@@ -1,0 +1,82 @@
+<section class="process-strip" aria-label="Fluxo de preparação">
+  <span>
+    01
+    <strong>Preservar a origem</strong>
+  </span>
+  <span>
+    02
+    <strong>Restringir as equipes</strong>
+  </span>
+  <span>
+    03
+    <strong>Converter e validar</strong>
+  </span>
+  <span>
+    04
+    <strong>Analisar</strong>
+  </span>
+</section>
+<section class="panel prose">
+  <h3>Preservação e recorte</h3>
+  <p>
+    O arquivo original permanece em
+    <code>
+      data/raw/{{ source.filename }}</code>. A leitura inicial preserva todos os valores como texto, inclusive os identificadores, para evitar perda de zeros à esquerda. O recorte é feito pelos IDs
+    <code>
+      1610612741
+    </code>
+    e
+    <code>
+      1610612750</code>, antes de qualquer estatística do relatório.
+  </p>
+  <p>São {{ source.rows|fmt }} registros de um arquivo com {{ source.original_rows|fmt }} linhas de dados. A visão analítica exclui as outras {{ source.original_teams - source.teams }} equipes. Linhas dos adversários podem ser consultadas apenas para verificar placar, data e estrutura da partida na origem, sem compor médias ou referências estatísticas.</p>
+  <p>Arquivo: {{ (source.bytes / 1024)|fmt }} KiB. Base preparada em memória: {{ (source.memory_bytes / 1024)|fmt }} KiB, incluindo índice. São medidas diferentes: o tamanho no disco não equivale ao consumo do DataFrame.</p>
+  <p class="hash">
+    <strong>SHA-256:</strong>
+    <code>
+      {{ source.sha256 }}
+    </code>
+  </p>
+</section>
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h3>Renomeação e conversão dos campos</h3>
+    </div>
+  </div>
+  <div
+    class="table-scroll"
+    tabindex="0"
+    role="region"
+    aria-label="Conversões de tipos e falhas"
+  >
+    {{ transformations_table }}
+  </div>
+  <p class="chart-note">Falhas de conversão preservam o valor original na auditoria; não são corrigidas por suposição. Inteiros anuláveis preservam ausências sem transformar contagens válidas em zero.</p>
+</section>
+<section class="note-grid two">
+  <article class="note-card">
+    <h3>Datas</h3>
+    <p>
+      <code>
+        GAME_DATE
+      </code>
+      é convertido com o formato
+      <code>
+        %Y-%m-%d
+      </code>
+      e exibido como dia/mês/ano. Datas inválidas são registradas. Não há horário informado; não é acrescentado um fuso horário artificial.
+    </p>
+  </article>
+  <article class="note-card">
+    <h3>Resultado binário</h3>
+    <p>Nesta versão, WL já é numérica: 1 indica vitória e 0 indica derrota. O sistema valida o domínio e converte a leitura textual ao tipo numérico. Não foi necessário recodificar letras W/L; W e L são outras colunas, de resultados acumulados.</p>
+  </article>
+</section>
+
+<section class="panel prose">
+  <h3>Por que não apagar tudo que não entra na análise?</h3>
+  <p>A matriz principal usa as sete variáveis pedidas. IDs, data e confronto identificam os jogos; as demais estatísticas ficam na auditoria. O CSV original é preservado.</p>
+  <p>A seleção para previsão depende do alvo. Antes do jogo, suas estatísticas ainda não estão disponíveis e os acumulados devem ser deslocados no tempo para evitar vazamento. IDs e texto bruto não entram automaticamente como atributos numéricos.</p>
+  <p>Não há imputação ou remoção automática de extremos. Valores inválidos e conflitos de duplicação são detalhados na seção de qualidade abaixo.</p>
+</section>

@@ -1,0 +1,139 @@
+<section class="panel prose">
+  <h3>Convenções da análise descritiva</h3>
+  <p>Cada série contém os valores válidos de uma variável em uma equipe. Ausências e células inválidas são omitidas apenas da medida afetada, e o número válido é informado. Extremos válidos não são removidos. A apresentação usa duas casas decimais para medidas contínuas e percentuais; contagens de registros são inteiras.</p>
+  <div class="formula-grid">
+    <article>
+      <h3>Média e mediana</h3>
+      <code>
+        média = Σxᵢ / n
+        <br>
+        mediana = quantil(0,50)
+      </code>
+      <p>A média usa todos os valores; a mediana é menos sensível à magnitude dos extremos.</p>
+    </article>
+    <article>
+      <h3>Dispersão amostral</h3>
+      <code>
+        s² = Σ(xᵢ − média)² / (n − 1)
+        <br>
+        s = √s²
+      </code>
+      <p>
+        Usa-se
+        <code>
+          ddof=1
+        </code>
+        em todas as medidas descritivas de desvio e variância. É a convenção adotada para estudar variação entre jogos; com n &lt; 2, não é estimável.
+      </p>
+    </article>
+    <article>
+      <h3>Quartis, IQR e amplitude</h3>
+      <code>
+        IQR = Q3 − Q1
+        <br>
+        amplitude = máximo − mínimo
+      </code>
+      <p>Q1 e Q3 usam interpolação linear explícita no pandas. Esses mesmos valores alimentam tabelas e boxplots. O intervalo entre quartis delimita a faixa central de 50%, com a ressalva de empates em contagens.</p>
+    </article>
+    <article>
+      <h3>Coeficiente de variação</h3>
+      <code>
+        CV (%) = 100 × s / média
+      </code>
+      <p>Exige escala de razão e média positiva. Média zero torna a medida indefinida; médias pequenas tornam a razão instável. IQR/mediana, com mediana positiva, é um complemento robusto e não o mesmo CV.</p>
+    </article>
+  </div>
+  <p>
+    <strong>Moda:</strong>
+    todas as categorias numéricas com frequência máxima são informadas. Se todos os valores aparecem uma única vez, mostra-se “sem moda informativa”, em vez de listar toda a série como uma moda útil.
+  </p>
+</section>
+<section class="panel prose">
+  <h3>Assimetria ajustada de Fisher–Pearson</h3>
+  <div class="formula">
+    mᵣ = (1/n) × Σ(xᵢ − média)ʳ
+    <br>
+    G1 = [√(n(n − 1)) / (n − 2)] × m₃ / m₂^(3/2)
+  </div>
+  <p>
+    Implementação:
+    <code>
+      scipy.stats.skew(values, bias=False)</code>. O ajuste explicita a correção do coeficiente amostral. Séries constantes ou com menos de três valores recebem medida indefinida. G1 positivo indica cauda à direita; negativo indica cauda à esquerda.
+  </p>
+  <p>Critério de intensidade: |G1| &lt; 0,5 aproximadamente simétrica; 0,5 ≤ |G1| &lt; 1 moderada; |G1| ≥ 1 forte. Direção e intensidade são classificações distintas: um coeficiente positivo pequeno pode ser aproximadamente simétrico. Os limites são convenções, sem equivalência a um teste de normalidade.</p>
+  <p>
+    A KDE usa
+    <code>
+      scipy.stats.gaussian_kde(..., bw_method='scott')
+    </code>
+    e compartilha escala de densidade com o histograma. A curva suaviza uma variável discreta, pode sugerir picos sensíveis à largura de banda e apresenta limitações na fronteira zero. Não é estimada em séries constantes ou com menos de três valores.
+  </p>
+</section>
+<section class="panel prose">
+  <h3>Detecção de extremos: sete procedimentos</h3>
+  <ol class="method-list">
+    <li>
+      <strong>IQR:</strong>
+      limites Q1 − 1,5 × IQR e Q3 + 1,5 × IQR. Sinaliza valores estritamente fora deles. Os bigodes terminam nas observações internas mais extremas; não nos limites teóricos.
+    </li>
+    <li>
+      <strong>Z-score:</strong>
+      zᵢ = (xᵢ − média)/s, com desvio amostral; sinaliza |z| &gt; 3. Assimetria e extremos afetam a média e o desvio que definem a própria referência.
+    </li>
+    <li>
+      <strong>Grubbs:</strong>
+      G = max|xᵢ − média|/s. Teste bilateral de um candidato, α = 0,05. Valor crítico: (n−1)/√n × √[t²/(n−2+t²)], com t = quantil da distribuição t em 1−α/(2n), n−2 graus de liberdade. Requer normalidade aproximada e independência. Shapiro–Wilk é um diagnóstico auxiliar, não uma garantia. Não há remoção iterativa; as múltiplas séries têm leitura exploratória.
+    </li>
+    <li>
+      <strong>ECOD:</strong>
+      calcula escores de cauda a partir das distribuições acumuladas empíricas e de um ajuste relacionado à assimetria. Usa a implementação do PyOD, em uma dimensão por vez. O escore não exige definir vizinhança; a rotulagem usa
+      <code>
+        contamination=0.05</code>, uma escolha exploratória, não uma estimativa de erros.
+    </li>
+    <li>
+      <strong>KNN:</strong>
+      escore igual à distância ao quinto outro vizinho, reduzindo k para n−1 quando necessário. A própria observação é excluída por índice, inclusive em empates. Sinaliza estritamente acima do percentil 95 linear dos escores.
+    </li>
+    <li>
+      <strong>DBSCAN:</strong>
+      conecta regiões densas por
+      <code>
+        eps=0.5
+      </code>
+      e
+      <code>
+        min_samples=5</code>. Pontos com rótulo −1 são ruído; não há escore contínuo nativo nesta saída. O resultado depende da escala e dos parâmetros.
+    </li>
+    <li>
+      <strong>LOF:</strong>
+      compara a densidade local da observação com a de seus vizinhos. Usa
+      <code>
+        n_neighbors=min(20,n−1)</code>,
+      <code>
+        contamination='auto'
+      </code>
+      e
+      <code>
+        fit_predict
+      </code>
+      na amostra. O escore exibido é o negativo de
+      <code>
+        negative_outlier_factor_</code>; o limiar é o negativo de
+      <code>
+        offset_</code>. Não se usa o modo de detecção de novidades.
+    </li>
+  </ol>
+  <p>
+    KNN, DBSCAN e LOF usam
+    <code>
+      StandardScaler
+    </code>
+    em cada série, com desvio populacional interno (<code>ddof=0</code>). Isso define a unidade de distância e não altera o uso de desvio amostral nas medidas do relatório. ECOD e as regras estatísticas recebem a escala original.
+  </p>
+  <p>As configurações são fixas e transparentes, sem seleção por uma resposta desejada. Na ausência de rótulos verdadeiros, não se afirma qual detector é “mais preciso”. Séries insuficientes/constantes são marcadas como não aplicáveis; não se confundem com execução que retornou zero extremos.</p>
+</section>
+<section class="panel prose">
+  <h3>Z-score para comparação entre equipes</h3>
+  <p>O gráfico padronizado usa a média e o desvio amostral dos registros válidos das duas equipes como referência fixa. Padroniza cada jogo e apresenta a média dos z-scores por time. O filtro de exibição não altera a população de referência, e os outros 28 times não entram nela.</p>
+  <p>Padronizar cada equipe pela sua própria média e depois comparar a média dos z-scores produziria valores próximos de zero para ambas; por isso essa abordagem não é usada. O z-score de detecção de extremos, por sua vez, usa a série da própria equipe, pois responde a outra pergunta.</p>
+</section>

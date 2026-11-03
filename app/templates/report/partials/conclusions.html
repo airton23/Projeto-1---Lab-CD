@@ -1,0 +1,80 @@
+{% for insight in team_insights %}
+  <section class="panel prose">
+    <h3>{{ insight.team.name }}</h3>
+    {% if insight.stable %}
+      <p>
+        Menor dispersão relativa:
+        <strong>{{ schema[insight.stable[0]].label|lower }}</strong>
+        (CV {{ insight.stable[1].cv|fmt }}%). Maior:
+        <strong>{{ schema[insight.variable[0]].label|lower }}</strong>
+        ({{ insight.variable[1].cv|fmt }}%). Regularidade não implica maior média.
+      </p>
+    {% endif %}
+    {% if insight.skewed %}
+      <p>
+        Maior assimetria absoluta:
+        <strong>{{ schema[insight.skewed[0]].label|lower }}</strong>, G1 = {{ insight.skewed[1].skew|fmt }}; direção {{ insight.skewed[1].direction }}, intensidade {{ insight.skewed[1].intensity }}.
+      </p>
+    {% endif %}
+
+  </section>
+{% endfor %}
+
+{% if comparisons %}
+  <section class="panel prose">
+    <h3>Regularidade e concentração entre equipes</h3>
+    {% for item in comparisons %}
+      <p>
+        <strong>{{ item.label }}:</strong>
+        {% if item.tie %}
+          CVs equivalentes.
+        {% else %}
+          {{ item.low }} tem menor CV ({{ item.low_cv|fmt }}%) que {{ item.high }} ({{ item.high_cv|fmt }}%).
+        {% endif %}
+        {% if item.iqr_tie %}
+          IQR igual: {{ item.iqr_low|fmt }} {{ schema[item.variable].unit }}.
+        {% else %}
+          Menor IQR em {{ item.iqr_low_team }}: {{ item.iqr_low|fmt }}, contra {{ item.iqr_high|fmt }} {{ schema[item.variable].unit }}.
+          {% if not item.tie and item.low != item.iqr_low_team %}
+            Os critérios discordam: CV mede dispersão relativa total; IQR, concentração central.
+          {% endif %}
+        {% endif %}
+      </p>
+    {% endfor %}
+    <p>{% if repeated_skew %}A variável mais assimétrica se repete nas duas equipes.{% else %}A variável mais assimétrica difere entre as equipes.{% endif %} Os quadros comparativos estão na seção anterior.</p>
+  </section>
+{% endif %}
+
+<section class="panel prose">
+  <h3>Quando o desvio reage mais que o IQR?</h3>
+  <p>Comparamos a série completa com um cenário sem os sinalizados pelo IQR. É uma verificação de influência, não uma recomendação de exclusão.</p>
+  {% if influence %}
+    <div class="insight-list">
+      {% for item in influence %}
+        <p>
+          <strong>{{ item.team }} · {{ item.variable }}:</strong>
+          desvio reduzido em {{ item.std_drop|fmt }}%; mudança absoluta do IQR de {{ item.iqr_change|fmt }}%. O desvio respondeu proporcionalmente mais aos extremos.
+        </p>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Nenhum caso teve redução percentual do desvio maior que a mudança percentual absoluta do IQR. Robustez não significa invariância.</p>
+  {% endif %}
+  <details>
+    <summary>Conferir todos os valores da análise de sensibilidade</summary>
+    <div
+      class="table-scroll details-body"
+      tabindex="0"
+      role="region"
+      aria-label="Sensibilidade por equipe e variável"
+    >
+      {{ sensitivity_all }}
+    </div>
+  </details>
+</section>
+
+<section class="panel prose">
+  <h3>Limitações e próximas análises</h3>
+  <p>Campos completos não garantem temporada completa. Há dependência temporal e entre adversários, incluindo dois confrontos diretos. Mando, ritmo e prorrogação não foram controlados; diferenças descritivas não comprovam causalidade ou significância estatística.</p>
+  <p>Extremos válidos permanecem na análise. Distribuições assimétricas podem justificar métodos robustos; transformações logarítmicas exigem cuidado com zeros. Uma futura previsão deve usar apenas informações disponíveis antes do jogo e separar os dados por tempo e partida.</p>
+</section>

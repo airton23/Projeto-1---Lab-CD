@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block heading %}
+  Visão Geral
+{% endblock %}
+
+{% block description %}
+  Desempenho, regularidade e jogos extremos de Chicago e Minnesota.
+{% endblock %}
+
+{% block content %}
+
+  <section class="metrics-grid" aria-label="Dimensões da análise">
+    <article class="metric">
+      <span class="metric-label">REGISTROS NO RECORTE</span>
+      <strong>{{ active_rows|fmt }}</strong>
+      <span>uma observação por time e jogo</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">EQUIPES EM ANÁLISE</span>
+      <strong>{{ visible_teams|length }}</strong>
+      <span>recorte exclusivo do grupo</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">VARIÁVEIS PRINCIPAIS</span>
+      <strong>07</strong>
+      <span>tendência central e dispersão</span>
+    </article>
+    <article class="metric">
+      <span class="metric-label">COLUNAS DOCUMENTADAS</span>
+      <strong>{{ source.columns }}</strong>
+      <span>dicionário, tipos e qualidade</span>
+    </article>
+  </section>
+  <div class="section-heading">
+    <div>
+      <h2>Equipes</h2>
+    </div>
+
+  </div>
+  <section class="team-grid">
+
+    {% for card in cards %}
+
+      <article class="team-card {{ 'bulls' if card.short == 'CHI' else 'wolves' }}">
+        <div class="team-card-top">
+          <div>
+            <span class="team-code">{{ card.short }}</span>
+            <h3>{{ card.name }}</h3>
+          </div>
+          <span class="team-emblem" aria-hidden="true">{{ card.short }}</span>
+        </div>
+        <div class="team-numbers">
+          <div>
+            <strong>{{ card.summary.mean|fmt }}</strong>
+            <span>pontos/jogo · média</span>
+          </div>
+          <div>
+            <strong>
+              {{ card.summary.cv|fmt }}<small>%</small>
+            </strong>
+            <span>CV da pontuação</span>
+          </div>
+          <div>
+            <strong>
+              {{ card.wins }}<small> / {{ card.games }}</small>
+            </strong>
+            <span>vitórias / jogos</span>
+          </div>
+        </div>
+        <p>Mediana: {{ card.summary.median|fmt }} pontos/jogo. Faixa central: {{ card.summary.q1|fmt }}–{{ card.summary.q3|fmt }} pontos.</p>
+        <a
+          href="{{ url_for('report.descriptive', time=card.id, variavel='pontos') }}"
+        >Explorar a equipe
+          <span aria-hidden="true">↗</span>
+        </a>
+      </article>
+
+    {% endfor %}
+
+  </section>
+  <section class="panel">
+    <div class="chart">{{ timeline }}</div>
+
+  </section>
+  <section class="panel">
+    <div class="chart">{{ overview_box }}</div>
+
+  </section>
+
+  {% include 'components/project_team.html' %}
+
+{% endblock %}

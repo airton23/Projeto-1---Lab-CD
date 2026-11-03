@@ -1,0 +1,82 @@
+<form
+  class="filters"
+  method="get"
+  action="{{ request.path }}"
+  aria-label="Filtros do relatório"
+>
+  <div class="filter-icon" aria-hidden="true">☷</div>
+  <div class="filter-field">
+    <label for="team">Equipe</label>
+    <select id="team" name="time">
+      <option
+        value="ambos"
+        {{ 'selected' if selected_team == 'ambos' else '' }}
+      >As duas equipes</option>
+      {% for id, team in teams.items() %}
+        <option
+          value="{{ id }}"
+          {{ 'selected' if selected_team == id else '' }}
+        >{{ team.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if page != 'full_report' %}
+
+    <div class="filter-field">
+      <label for="variable">Variável</label>
+      <select id="variable" name="variavel">
+        {% for key in variables %}
+          <option
+            value="{{ key }}"
+            {{ 'selected' if variable == key else '' }}
+          >{{ schema[key].label }} · {{ schema[key].original }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+  {% else %}
+    <input type="hidden" name="variavel" value="{{ variable }}">
+  {% endif %}
+
+  {% if page == 'quality' %}
+
+    <div class="filter-field">
+      <label for="method">Detector</label>
+      <select id="method" name="metodo">
+        {% for key, label in methods.items() %}
+          <option value="{{ key }}" {{ 'selected' if method == key else '' }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+  {% else %}
+    <input type="hidden" name="metodo" value="{{ method }}">
+  {% endif %}
+
+  {% if page == 'comparison' %}
+
+    <div class="filter-field">
+      <label for="measure">Medida</label>
+      <select id="measure" name="medida">
+        {% for key, label in measures.items() %}
+          <option value="{{ key }}" {{ 'selected' if measure == key else '' }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+  {% else %}
+    <input type="hidden" name="medida" value="{{ measure }}">
+  {% endif %}
+
+  <button type="submit" class="button">
+    Atualizar análise
+    <span aria-hidden="true">↗</span>
+  </button>
+</form>
+<div class="scope-line">
+  <span class="status-dot"></span>
+  Recorte ativo:
+  <strong>{{ scope_label }}</strong>
+  <span class="scope-count">{{ active_rows|fmt }} registros time-partida · {{ source.date_min|fmt }} a {{ source.date_max|fmt }}</span>
+</div>

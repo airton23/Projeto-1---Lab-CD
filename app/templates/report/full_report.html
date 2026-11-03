@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Resultados, tratamentos, métodos e interpretação das sete variáveis em uma única página.
+{% endblock %}
+
+{% block content %}
+  <nav class="report-index" aria-label="Seções do relatório">
+    <a href="#base">Base de dados</a>
+    <a href="#dicionario">Dicionário</a>
+    <a href="#preparacao">Preparação</a>
+    <a href="#qualidade">Qualidade</a>
+    <a href="#metodologia">Métodos</a>
+    <a href="#analises">Análises</a>
+    <a href="#comparacao">Comparação</a>
+    <a href="#sintese">Conclusões</a>
+    <a href="#referencias">Referências</a>
+  </nav>
+
+  {% include 'components/project_team.html' %}
+
+  <section id="base" class="panel prose report-section">
+    <h2>1. Base de dados e objetivo</h2>
+    <p>Este projeto analisa pontos, rebotes, assistências, roubos de bola, tocos, faltas pessoais e cestas de três convertidas de Chicago Bulls e Minnesota Timberwolves. O objetivo é comparar valor típico, dispersão, forma das distribuições e qualidade dos dados, sem atribuir causalidade às diferenças.</p>
+    <p>A origem contém {{ source.original_rows|fmt }} registros, {{ source.original_columns }} colunas e {{ source.original_teams }} times. O recorte das duas equipes tem {{ source.rows|fmt }} registros time-partida, correspondentes a {{ source.games|fmt }} partidas distintas entre {{ source.date_min|fmt }} e {{ source.date_max|fmt }}. Os dois confrontos diretos geram uma linha para cada equipe; isso não é duplicação.</p>
+    <p>
+      Recorte apresentado:
+      <strong>{{ scope_label }}</strong>, {{ active_rows|fmt }} registros. Incluem-se jogos contra todos os adversários disponíveis, não apenas confrontos entre as duas equipes. A fonte original e a data de coleta não foram informadas; o período observado não garante cobertura da temporada inteira.
+    </p>
+  </section>
+
+  <section id="dicionario" class="panel report-section">
+    <h2>2. Dicionário de dados</h2>
+    <p>IDs são identificadores, não medidas quantitativas. Proporções são armazenadas em [0, 1] e exibidas em percentual quando indicado. A unidade de observação é um time em uma partida.</p>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Dicionário completo no relatório"
+    >
+      {{ dictionary_table }}
+    </div>
+  </section>
+
+  <div id="preparacao" class="report-section">
+    <h2>3. Preparação e tratamentos</h2>
+    {% include 'report/partials/preparation.html' %}
+  </div>
+
+  <div id="qualidade" class="report-section">
+    <h2>4. Qualidade dos dados</h2>
+    <section class="panel prose">
+      <h3>Diagnóstico do recorte</h3>
+      <p>{{ missing_count }} células ausentes na leitura, {{ invalid_count }} registros com alertas, {{ duplicate_count }} duplicações exatas e {{ duplicate_key_rows }} linhas com chave repetida. Uma linha pode violar várias regras; contagens entre métodos também podem se sobrepor.</p>
+      <div
+        class="table-scroll"
+        tabindex="0"
+        role="region"
+        aria-label="Qualidade por coluna no relatório"
+      >
+        {{ audit_table }}
+      </div>
+    </section>
+    {% include 'report/partials/quality_discussion.html' %}
+    {% include 'report/partials/missing.html' %}
+    {% include 'report/partials/detectors.html' %}
+    <section class="panel">
+      <div class="chart">{{ detection_heatmap }}</div>
+      <h3>Contagens por detector</h3>
+      <div
+        class="table-scroll"
+        tabindex="0"
+        role="region"
+        aria-label="Todos os detectores no relatório"
+      >
+        {{ detectors_table }}
+      </div>
+      <details>
+        <summary>Jogos sinalizados por todos os métodos</summary>
+        <div
+          class="table-scroll details-body"
+          tabindex="0"
+          role="region"
+          aria-label="Jogos e escores de todos os detectores"
+        >
+          {{ all_outlier_occurrences }}
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <div id="metodologia" class="report-section">
+    <h2>5. Métodos e convenções</h2>
+    {% include 'report/partials/methodology.html' %}
+  </div>
+
+  <div id="analises" class="report-section">
+    <h2>6. Análises por variável</h2>
+    {% for chapter in variable_chapters %}
+      <section
+        id="analise-{{ chapter.variable }}"
+        class="report-section"
+        data-report-variable="{{ chapter.variable }}"
+      >
+        <h2>{{ schema[chapter.variable].label }}</h2>
+        {% with variable=chapter.variable, statistics_table=chapter.statistics_table, distributions=chapter.distributions, boxplot=chapter.boxplot, extremes_table=chapter.extremes_table %}
+          {% include 'report/partials/variable_analysis.html' %}
+        {% endwith %}
+        <section class="panel">
+          <div class="chart">{{ chapter.bar_chart }}</div>
+        </section>
+      </section>
+    {% endfor %}
+  </div>
+
+  <section id="comparacao" class="panel report-section">
+    <h2>7. Comparação entre equipes</h2>
+    <h3>CV (%)</h3>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="CV no relatório">
+      {{ cv_table }}
+    </div>
+    <h3>IQR</h3>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="IQR no relatório">
+      {{ iqr_table }}
+    </div>
+    <h3>Assimetria ajustada</h3>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Assimetria no relatório"
+    >
+      {{ skew_table }}
+    </div>
+    <h3>Quartis e dispersão</h3>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Quartis no relatório"
+    >
+      {{ comparison_details }}
+    </div>
+  </section>
+
+  <div id="sintese" class="report-section">
+    <h2>8. Síntese e limitações</h2>
+    {% include 'report/partials/conclusions.html' %}
+  </div>
+
+  <div id="referencias" class="report-section">{% include 'report/partials/references.html' %}</div>
+{% endblock %}

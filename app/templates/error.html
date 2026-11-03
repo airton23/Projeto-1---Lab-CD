@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ error.code }} · Quadra em Dados</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/styles.css') }}">
+  </head>
+  <body class="error-body">
+    <main class="panel prose">
+      <h1>{{ 'Seleção inválida' if error.code == 400 else 'Página não encontrada' }}</h1>
+      <p>{{ error.description if error.code == 400 else 'O endereço solicitado não corresponde a uma seção do relatório.' }}</p>
+      <a class="button" href="{{ url_for('report.overview') }}">Voltar à visão geral ↗</a>
+    </main>
+  </body>
+</html>

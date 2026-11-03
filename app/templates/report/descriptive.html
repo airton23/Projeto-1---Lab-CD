@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Selecione a equipe e a variável para consultar medidas e distribuições.
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h2>Medidas de {{ schema[variable].label|lower }}</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Medidas descritivas por equipe"
+    >
+      {{ statistics_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="chart">{{ boxplot }}</div>
+  </section>
+  {% for card in distributions %}
+    <section class="panel">
+      <span class="chip">{{ card.summary.n }} valores válidos</span>
+      <div class="chart">{{ card.histogram }}</div>
+    </section>
+  {% endfor %}
+  <section class="panel">
+    <h2>Jogos fora dos limites IQR</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Lista de jogos sinalizados pelo IQR"
+    >
+      {{ extremes_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Sensibilidade aos extremos</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Análise de sensibilidade com e sem extremos"
+    >
+      {{ sensitivity_table }}
+    </div>
+  </section>
+{% endblock %}

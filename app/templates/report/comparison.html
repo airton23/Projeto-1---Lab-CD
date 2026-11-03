@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Compare as medidas das duas equipes por variável.
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="chart">{{ bar_chart }}</div>
+    {% if reference %}
+      <p class="chart-note">
+        <strong>Referência conjunta das duas equipes:</strong>
+        {{ reference.n }} valores válidos; média {{ reference.mean|fmt }} e desvio {{ reference.std|fmt }} {{ schema[variable].unit }}.
+      </p>
+    {% endif %}
+  </section>
+  <section class="panel">
+    <h2>Coeficiente de variação (%)</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Coeficiente de variação por variável e time"
+    >
+      {{ cv_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Intervalo interquartil</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="IQR por variável e time"
+    >
+      {{ iqr_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Assimetria ajustada</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Assimetria por variável e time"
+    >
+      {{ skew_table }}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Quartis e dispersão</h2>
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Quadro completo por variável e time"
+    >
+      {{ comparison_details }}
+    </div>
+  </section>
+{% endblock %}

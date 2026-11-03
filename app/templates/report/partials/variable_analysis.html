@@ -1,0 +1,113 @@
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h3>Medidas de {{ schema[variable].label|lower }}</h3>
+    </div>
+    <span class="chip">Desvio e variância amostrais · n − 1</span>
+  </div>
+  <div
+    class="table-scroll"
+    tabindex="0"
+    role="region"
+    aria-label="Medidas descritivas por equipe"
+  >
+    {{ statistics_table }}
+  </div>
+  <p class="chart-note">Quartis por interpolação linear; valores arredondados somente na exibição. “—” indica medida indefinida ou indisponível; contagens de jogos são inteiras. Todas as modas empatadas são preservadas.</p>
+</section>
+<section class="panel">
+
+  <div class="chart">{{ boxplot }}</div>
+  <p class="chart-note">A caixa vai de Q1 a Q3; a linha interna é a mediana. Diamante = média; × = moda(s); triângulos = extremos. Bigodes alcançam os valores observados dentro dos limites pontilhados. Limite inferior negativo é uma construção da regra, não um valor negativo observado.</p>
+</section>
+
+{% for card in distributions %}
+
+  {% set s = card.summary %}
+
+  <section class="panel">
+    <div class="panel-heading">
+
+      <span class="chip">{{ s.n }} valores válidos</span>
+    </div>
+    <div class="report-analysis-grid">
+      <div class="chart">{{ card.histogram }}</div>
+      <div class="interpretation">
+        {% if s.n %}
+
+          <p>
+            A média de
+            <strong>{{ s.mean|fmt }}</strong>
+            e a mediana de
+            <strong>{{ s.median|fmt }} {{ schema[variable].unit }}</strong>
+            resumem posições distintas. O intervalo de Q1 = {{ s.q1|fmt }} a Q3 = {{ s.q3|fmt }} tem largura
+            <strong>{{ s.iqr|fmt }}</strong>: é a faixa central delimitada pelos quartis interpolados.
+          </p>
+          <p>A amplitude de {{ s.range|fmt }} supera o IQR em {{ (s.range - s.iqr)|fmt }} {{ schema[variable].unit }}. A amplitude depende dos extremos; o IQR se concentra na parte central da distribuição.</p>
+
+          {% if s.n >= 3 and s.intensity != 'indefinida' %}
+
+            <p>
+              O coeficiente ajustado
+              <strong>G1 = {{ s.skew|fmt }}</strong>
+              indica direção {{ s.direction }} e intensidade
+              <strong>{{ s.intensity }}</strong>.
+              {% if s.intensity == 'forte' %}
+                A mediana é uma referência mais resistente aos jogos extremos; isso favorece seu uso para comunicar o valor típico junto à média.
+              {% else %}
+                Média e mediana devem ser lidas em conjunto; a classificação não implica normalidade.
+              {% endif %}
+            </p>
+
+            {% if (s.skew > 0 and s.mean < s.median) or (s.skew < 0 and s.mean > s.median) %}
+              <p>O sinal da assimetria e a posição relativa de média/mediana não seguem a regra visual usual. G1 usa o terceiro momento; discretização e múltiplas modas podem explicar essa diferença. A relação não é uma identidade matemática.</p>
+            {% else %}
+              <p>A posição relativa de média e mediana é compatível com a direção sugerida por G1. O boxplot permite localizar os {{ s.outlier_count }} extremos IQR; o histograma mostra onde a frequência se concentra. Múltiplos picos da KDE, se presentes, não alteram automaticamente o sinal da cauda medido pelo coeficiente.</p>
+            {% endif %}
+
+          {% else %}
+            <p>A assimetria não é estimável: exige ao menos três valores e variabilidade.</p>
+          {% endif %}
+
+          <p>
+            {% if s.mean > 0 and s.n > 1 %}
+              O CV de
+              <strong>{{ s.cv|fmt }}%</strong>
+              expressa o desvio padrão como proporção da média.
+              {% if s.mean < 1 %}
+                Como a média está abaixo de uma ocorrência por jogo, a razão pode ficar inflada; priorize também a leitura do IQR e dos valores absolutos.
+              {% endif %}
+
+            {% else %}
+              O CV está indefinido por falta de variabilidade amostral estimável ou média positiva.
+            {% endif %}
+          </p>
+
+        {% else %}
+          <p>Nenhum valor válido neste recorte. As medidas e a KDE estão indisponíveis.</p>
+        {% endif %}
+
+      </div>
+    </div>
+    <p class="chart-note">O histograma está em densidade para compartilhar o eixo com a KDE, estimada pela regra de Scott quando há dados suficientes. Contagens são discretas; a curva é uma suavização e tem efeito de fronteira próximo a zero. A comparação visual depende também dos intervalos do histograma e da largura de banda.</p>
+  </section>
+
+{% endfor %}
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h3>Jogos fora dos limites IQR</h3>
+    </div>
+    <span class="chip">Regra estrita · 1,5 × IQR</span>
+  </div>
+  <div
+    class="table-scroll"
+    tabindex="0"
+    role="region"
+    aria-label="Lista de jogos sinalizados pelo IQR"
+  >
+    {{ extremes_table }}
+  </div>
+  <p class="chart-note">A mesma máscara produz a lista e os pontos do boxplot. São observações estatisticamente extremas; a análise principal preserva os valores válidos.</p>
+</section>

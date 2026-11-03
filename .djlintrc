@@ -1,0 +1,16 @@
+{
+  "profile": "jinja",
+  "custom_html": "span,label,strong,code",
+  "indent": 2,
+  "max_line_length": 100,
+  "max_attribute_length": 80,
+  "max_blank_lines": 1,
+  "preserve_blank_lines": false,
+  "single_attribute_per_line": true,
+  "line_break_after_multiline_tag": true,
+  "blank_line_after_tag": "extends,endblock",
+  "blank_line_before_tag": "block",
+  "no_function_formatting": true,
+  "no_set_formatting": true,
+  "quote_style": "single"
+}

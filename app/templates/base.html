@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Relatório interativo de estatística descritiva: Chicago Bulls e Minnesota Timberwolves."
+    >
+    <title>{{ page_title }} · Quadra em Dados</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c4038'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='40' fill='%23fff' font-family='Arial'%3EQ%3C/text%3E%3C/svg%3E"
+    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('report.plotly_asset') }}"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <aside class="sidebar" aria-label="Navegação principal" tabindex="0">
+      <a
+        class="brand"
+        href="{{ url_for('report.overview') }}"
+        aria-label="Quadra em Dados, início"
+      >
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" />
+          <path d="M4 24h40M24 4v40M10 10c19 3 25 9 28 28M38 10C19 13 13 19 10 38" />
+        </svg>
+        <span>
+          quadra
+          <span class="brand-bottom">
+            em dados<span class="brand-dot">.</span>
+          </span>
+        </span>
+      </a>
+      <p class="sidebar-kicker">LABORATÓRIO DE CIÊNCIA DE DADOS</p>
+      <nav class="navigation">
+
+        {% for key, info in pages.items() %}
+
+          <a
+            href="{{ url_for('report.' ~ key, time=selected_team, variavel=variable, metodo=method, medida=measure) }}"
+            class="nav-link {{ 'active' if page == key else '' }}"
+            {% if page == key %} aria-current="page" {% endif %}
+          >
+            <span class="nav-number">{{ '%02d'|format(loop.index) }}</span>{{ info[1] }}<span class="nav-arrow" aria-hidden="true">↗</span>
+          </a>
+
+        {% endfor %}
+
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="status-dot"></span>
+        Análise univariada
+        <p>
+          Chicago Bulls
+          <br>
+          Minnesota Timberwolves
+        </p>
+        <span class="sidebar-period">{{ source.date_min|fmt }} — {{ source.date_max|fmt }}</span>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <span>
+          PROJETO 01
+          <span class="topbar-slash">/</span>
+          RELATÓRIO INTERATIVO
+        </span>
+        <span class="data-badge">
+          <span class="status-dot"></span>
+          Base local · {{ source.rows|fmt }} registros
+        </span>
+      </header>
+      <main id="conteudo">
+        <div class="page-heading">
+          <h1>
+            {% block heading %}
+              {{ page_title }}
+            {% endblock %}
+          </h1>
+          <p class="page-description">
+            {% block description %}{% endblock %}
+          </p>
+        </div>
+
+        {% if page in ['overview', 'quality', 'descriptive', 'comparison', 'full_report'] %}
+
+          {% include 'components/filters.html' %}
+
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+      </main>
+      <footer class="footer">
+        <span>Quadra em Dados · Projeto de análise descritiva</span>
+        <a href="{{ url_for('report.full_report') }}">Relatório completo ↗</a>
+        <span>
+          Base SHA-256:
+          <code title="{{ source.sha256 }}">
+            {{ source.sha256[:12] }}
+          </code>
+        </span>
+      </footer>
+    </div>
+  </body>
+</html>

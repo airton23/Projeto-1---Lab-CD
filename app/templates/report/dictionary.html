@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block description %}
+  Nomes, tipos, unidades e significado das colunas.
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div
+      class="table-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="Dicionário completo das colunas"
+    >
+      {{ dictionary_table }}
+    </div>
+  </section>
+{% endblock %}
